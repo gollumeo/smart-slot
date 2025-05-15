@@ -39,6 +39,11 @@ describe('Unit: Issue Access Token', function (): void {
             ->toThrow(ValidationException::class);
     });
 
+    it('throws if user is not found', function (): void {
+        expect(fn () => new IssueAccessToken()('not-an-email-address', 'secret', 'Postman'))
+            ->toThrow(ValidationException::class);
+    });
+
     it('returns only the token string', function () {
         $user = new User([
             'name' => 'Pierre',
