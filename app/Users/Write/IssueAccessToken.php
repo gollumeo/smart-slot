@@ -20,6 +20,8 @@ final class IssueAccessToken
             ]);
         }
 
+        $user->tokens()->where('name', $device)->delete();
+
         return $user->createToken($device)->plainTextToken;
     }
 }
