@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-describe('Feature: Login Http Request', function () {
+describe('Feature: Login—Http Request', function () {
     it('ensures request validates required fields', function () {
         $response = test()->postJson('/api/auth/token');
         $response->assertStatus(422)
