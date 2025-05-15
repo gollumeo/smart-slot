@@ -127,3 +127,22 @@ Enabling `$stopOnFirstFailure` would prevent the detection of later validation f
 > 💡 For clarity and completeness, `$stopOnFirstFailure` is intentionally **not used** in `Login` FormRequest to allow
 > full validation coverage in tests.
 
+---
+
+## 🧑‍💻 Dev Notes
+
+### 🔐 Why no user registration is included
+
+This module assumes that user provisioning is handled externally (e.g. admin creation, SSO, or internal processes).  
+As such, only token-based authentication is implemented here to expose a secured API.
+
+The login flow was added intentionally to demonstrate:
+
+- the ability to work with Laravel Sanctum (API token flow)
+- a secure, testable authentication pipeline (FormRequest, validation, exception handling)
+- and a complete end-to-end flow consumable via Postman or frontend clients
+
+The authentication layer is self-contained and remains optional.  
+It can be bypassed with `actingAs()` in tests, or replaced by an external identity provider (IdP) in a real-world setup.
+
+
