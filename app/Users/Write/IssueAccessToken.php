@@ -10,18 +10,41 @@ use Illuminate\Validation\ValidationException;
 
 final class IssueAccessToken
 {
-    public function __invoke(string $email, string $password, string $device): string
+    public function __invoke(string $email, string $password, string $device): ?string
+    {
+        $user = $this->retrieveUserBy($email);
+
+        $this->verifyCredentials($user, $password);
+
+        $this->purgeExistingTokens($user, $device);
+
+        return $user->createToken($device)->plainTextToken;
+    }
+
+    private function retrieveUserBy(string $email): User
     {
         $user = User::where('email', $email)->first();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
+        if (! $user) {
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials'],
             ]);
         }
 
-        $user->tokens()->where('name', $device)->delete();
+        return $user;
+    }
 
-        return $user->createToken($device)->plainTextToken;
+    private function verifyCredentials(User $user, string $password): void
+    {
+        if (! Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Invalid credentials'],
+            ]);
+        }
+    }
+
+    private function purgeExistingTokens(User $user, string $device): void
+    {
+        $user->tokens()->where('name', $device)->delete();
     }
 }
