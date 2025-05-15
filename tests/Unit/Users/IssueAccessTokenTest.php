@@ -26,4 +26,32 @@ describe('Unit: Issue Access Token', function (): void {
         expect(fn () => new IssueAccessToken()('not-an-email-address', 'secret', 'Postman'))
             ->toThrow(ValidationException::class);
     });
+
+    it('throws with wrong password', function (): void {
+        $user = new User([
+            'name' => 'Pierre',
+            'email' => 'pierre@izix.eu',
+            'password' => Hash::make('secret'),
+        ]);
+        $user->save();
+
+        expect(fn () => new IssueAccessToken()($user->email, 'pwd', 'Postman'))
+            ->toThrow(ValidationException::class);
+    });
+
+    it('returns only the token string', function () {
+        $user = new User([
+            'name' => 'Pierre',
+            'email' => 'pierre@izix.eu',
+            'password' => Hash::make('secret'),
+        ]);
+        $user->save();
+
+        $token = new IssueAccessToken()($user->email, 'secret', 'Postman');
+        expect($token)->toBeString()
+            ->not()->toBeEmpty()
+            ->not()->toStartWith('{')
+            ->not()->toContain('token')
+            ->not()->toContain('user');
+    });
 });
