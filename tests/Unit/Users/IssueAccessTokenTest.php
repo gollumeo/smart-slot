@@ -54,4 +54,18 @@ describe('Unit: Issue Access Token', function (): void {
             ->not()->toContain('token')
             ->not()->toContain('user');
     });
+
+    it('deletes old token for the same device before issuing a new one', function (): void {
+        $user = new User([
+            'name' => 'Pierre',
+            'email' => 'pierre@izix.eu',
+            'password' => Hash::make('another-pwd'),
+        ]);
+        $user->save();
+
+        new IssueAccessToken()($user->email, 'another-pwd', 'Postman');
+
+        // not using Pest.php's toBeOne macro because of PHPStan
+        expect($user->tokens()->count())->toBe(1);
+    });
 });

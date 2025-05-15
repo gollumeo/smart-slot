@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Users\User;
+use App\Users\Write\IssueAccessToken;
 
 describe('Feature: Login', function (): void {
     it('ensures request validates required fields', function (): void {
@@ -38,5 +39,33 @@ describe('Feature: Login', function (): void {
 
         $response->assertStatus(200)
             ->assertJsonStructure(['token']);
+    });
+
+    it('denies access without token', function (): void {
+        $this->getJson('/api/user')
+            ->assertStatus(401);
+    });
+
+    it('returns the authenticated user making the request', function (): void {
+        $user = new User([
+            'name' => 'Pierre',
+            'email' => 'pierre@izix.eu',
+            'password' => Hash::make('mySoStrongPassword123.'),
+        ]);
+
+        $user->save();
+
+        $token = new IssueAccessToken()(
+            $user->email,
+            'mySoStrongPassword123.',
+            'Postman'
+        );
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/user');
+
+        expect($response->status())->toBe(200)
+            ->and($response->json('email'))->toBe($user->email);
     });
 });
