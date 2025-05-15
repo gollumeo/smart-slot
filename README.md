@@ -6,7 +6,8 @@ Shared EV charging slot coordination API
 
 ## 🔍 Context
 
-Corporate parking lots are undergoing electrification, but charging stations remain limited. This creates new coordination challenges for employees, such as avoiding usage conflicts or incomplete charging sessions.
+Corporate parking lots are undergoing electrification, but charging stations remain limited. This creates new
+coordination challenges for employees, such as avoiding usage conflicts or incomplete charging sessions.
 
 **SmartSlot** is a backend demonstrator that models the business logic involved in this context:
 
@@ -45,7 +46,7 @@ No IoT integration or frontend is expected at this stage: only the REST backend 
 ### Endpoints
 
 | Method | URI                         | Description                    |
-| ------ | --------------------------- | ------------------------------ |
+|--------|-----------------------------|--------------------------------|
 | POST   | /charging-requests          | Create a new charging request  |
 | GET    | /charging-requests/pending  | View pending requests          |
 | POST   | /charging-requests/{id}/end | End an active charging session |
@@ -71,7 +72,8 @@ This project serves as a showcase of:
 * my skill in isolating business rules from HTTP transport
 * my preference for clarity, readability, and testable code
 
-Rather than over-engineering, the goal is to show what a **clean, simple, yet extensible base** could look like for a future service.
+Rather than over-engineering, the goal is to show what a **clean, simple, yet extensible base** could look like for a
+future service.
 
 ---
 
@@ -108,3 +110,20 @@ Postman or cURL examples will be added progressively.
 ## ✅ Status
 
 > In progress. First MVP targeted for delivery by the evening of May 22.
+
+---
+
+## 🧑‍💻 Dev Notes
+
+### 🔒 Why `$stopOnFirstFailure = true` is not used in `Login` FormRequest
+
+By default, Laravel allows you to short-circuit validation using `$stopOnFirstFailure = true`.  
+This improves performance in some cases and can simplify user feedback.
+
+However, in this project, the `Login` FormRequest is tested via multiple assertions (using
+`assertJsonValidationErrors([...])`).  
+Enabling `$stopOnFirstFailure` would prevent the detection of later validation failures in the same test.
+
+> 💡 For clarity and completeness, `$stopOnFirstFailure` is intentionally **not used** in `Login` FormRequest to allow
+> full validation coverage in tests.
+
