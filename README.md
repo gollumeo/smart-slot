@@ -129,8 +129,6 @@ Enabling `$stopOnFirstFailure` would prevent the detection of later validation f
 
 ---
 
-## 🧑‍💻 Dev Notes
-
 ### 🔐 Why no user registration is included
 
 This module assumes that user provisioning is handled externally (e.g. admin creation, SSO, or internal processes).  
@@ -144,5 +142,24 @@ The login flow was added intentionally to demonstrate:
 
 The authentication layer is self-contained and remains optional.  
 It can be bypassed with `actingAs()` in tests, or replaced by an external identity provider (IdP) in a real-world setup.
+
+---
+
+### 🔄 Token overwrite strategy
+
+Each time a user logs in with valid credentials, any existing token matching the same `device_name` is deleted before
+issuing a new one.
+
+This choice ensures:
+
+- consistent single-session behavior per device,
+- no token accumulation in `personal_access_tokens`,
+- minimal write overhead per login,
+- a clean authentication lifecycle without storing stale tokens.
+
+This decision favors clarity and simplicity over persistence or refresh mechanisms, which are considered out of scope
+for this technical test.
+
+---
 
 
