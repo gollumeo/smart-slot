@@ -23,7 +23,7 @@ describe('Feature: Login', function (): void {
             ->assertJsonValidationErrors(['email']);
     });
 
-    it('ensures a registered user can login', function (): void {
+    it('ensures a registered user can log in', function (): void {
         $existingUser = new User([
             'name' => 'Pierre',
             'email' => 'pierre@izix.eu',
@@ -41,7 +41,7 @@ describe('Feature: Login', function (): void {
             ->assertJsonStructure(['token']);
     });
 
-    it('denies access without token', function (): void {
+    it('denies access without proper authentication', function (): void {
         $this->getJson('/api/user')
             ->assertStatus(401);
     });
