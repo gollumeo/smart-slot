@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-describe('Feature: Login—Http Request', function (): void {
+use App\Users\User;
+
+describe('Feature: Login', function (): void {
     it('ensures request validates required fields', function (): void {
         $response = test()->postJson('/api/auth/token');
         $response->assertStatus(422)
@@ -18,5 +20,23 @@ describe('Feature: Login—Http Request', function (): void {
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
+    });
+
+    it('ensures a registered user can login', function (): void {
+        $existingUser = new User([
+            'name' => 'Pierre',
+            'email' => 'pierre@izix.eu',
+            'password' => Hash::make('mySoStrongPassword'),
+        ]);
+        $existingUser->save();
+
+        $response = $this->postJson('/api/auth/token', [
+            'email' => $existingUser->email,
+            'password' => 'mySoStrongPassword',
+            'device_name' => 'Postman',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['token']);
     });
 });

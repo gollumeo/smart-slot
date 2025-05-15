@@ -20,6 +20,19 @@ final class Login extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Email is required.',
+            'password.required' => 'Password is required.',
+            'device_name.required' => 'Device name is required.',
+            'email.email' => 'Email is not valid.',
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;
