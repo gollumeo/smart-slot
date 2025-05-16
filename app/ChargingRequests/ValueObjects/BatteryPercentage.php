@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace App\ChargingRequests\ValueObjects;
 
-final class BatteryPercntage {}
+final class BatteryPercentage {}
