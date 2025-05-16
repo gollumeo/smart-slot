@@ -4,4 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
-interface RepositoryContract {}
+use Illuminate\Database\Eloquent\Model;
+
+interface RepositoryContract
+{
+    public function save(Model $model): void;
+}
