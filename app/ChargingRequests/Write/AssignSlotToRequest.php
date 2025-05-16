@@ -4,5 +4,7 @@ declare(strict_types=1);
 
 namespace App\ChargingRequests\Write;
 
-class AssignSlotToRequest {}
-
+class AssignSlotToRequest
+{
+    public function __invoke() {}
+}
