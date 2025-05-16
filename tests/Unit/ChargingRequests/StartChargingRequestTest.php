@@ -26,6 +26,11 @@ describe('Unit: Start Charging Request', function () {
         $expectation = $repository->shouldReceive('hasActiveRequestFor');
         $expectation->with($user)->andReturnFalse();
 
+        $repository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest))
+            ->andReturnUsing(fn ($request) => $request);
+
         $assignSlot = Mockery::mock(AssignSlotToRequest::class);
         $assignSlot->shouldReceive('__invoke')->once()->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest));
 
@@ -40,7 +45,7 @@ describe('Unit: Start Charging Request', function () {
             batteryPercentage: $batteryPercentage
         );
 
-        expect($chargingRequest)->toBe(ChargingRequestStatus::QUEUED);
+        expect($chargingRequest->status)->toBe(ChargingRequestStatus::QUEUED);
     });
 
     it('places the charging request in a waiting line if no slot is available', function () {
