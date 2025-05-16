@@ -95,6 +95,9 @@ php artisan test
 
 Postman or cURL examples will be added progressively.
 
+> A small global middleware was added to ensure API routes always respond with JSON, even if the client forgets the
+> appropriate headers. This avoids accidental HTML responses during testing or debugging.
+
 ---
 
 ## 🏛️ Future Ideas (if product evolves)
