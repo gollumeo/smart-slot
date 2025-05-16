@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\ChargingRequests\Write;
+namespace App\ChargingRequests;
 
 use Illuminate\Database\Eloquent\Model;
 
