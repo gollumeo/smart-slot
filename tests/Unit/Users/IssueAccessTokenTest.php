@@ -9,11 +9,7 @@ use Illuminate\Validation\ValidationException;
 describe('Unit: Issue Access Token', function (): void {
 
     it('returns a token with valid credentials', function (): void {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('secret'),
-        ]);
+        $user = User::register('Pierre', 'pierre@izix.eu', 'secret');
         $user->save();
 
         $token = new IssueAccessToken()($user->email, 'secret', 'Postman');
@@ -28,11 +24,7 @@ describe('Unit: Issue Access Token', function (): void {
     });
 
     it('throws with wrong password', function (): void {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('secret'),
-        ]);
+        $user = User::register('Pierre', 'pierre@izix.eu', 'secret');
         $user->save();
 
         expect(fn () => new IssueAccessToken()($user->email, 'pwd', 'Postman'))
@@ -45,11 +37,7 @@ describe('Unit: Issue Access Token', function (): void {
     });
 
     it('returns only the token string', function (): void {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('secret'),
-        ]);
+        $user = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword123');
         $user->save();
 
         $token = new IssueAccessToken()($user->email, 'secret', 'Postman');
@@ -61,16 +49,12 @@ describe('Unit: Issue Access Token', function (): void {
     });
 
     it('deletes old token for the same device before issuing a new one', function (): void {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('another-pwd'),
-        ]);
+        $user = User::register('Pierre', 'pierre@izix.eu', 'another-pwd');
         $user->save();
 
         new IssueAccessToken()($user->email, 'another-pwd', 'Postman');
 
-        // not using Pest.php's toBeOne macro because of PHPStan
+        // not using Pest.php's `toBeOne()` macro because of PHPStan
         expect($user->tokens()->count())->toBe(1);
     });
 });

@@ -6,6 +6,7 @@ namespace App\Users;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Hash;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -21,11 +22,7 @@ final class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = [];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -36,6 +33,16 @@ final class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public static function register(string $name, string $email, string $password): self
+    {
+        $instance = new self();
+        $instance->name = $name;
+        $instance->email = $email;
+        $instance->password = Hash::make($password);
+
+        return $instance;
+    }
 
     /**
      * Get the attributes that should be cast.

@@ -24,11 +24,7 @@ describe('Feature: Login', function (): void {
     });
 
     it('ensures a registered user can log in', function (): void {
-        $existingUser = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('mySoStrongPassword'),
-        ]);
+        $existingUser = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword');
         $existingUser->save();
 
         $response = $this->postJson('/api/auth/token', [
@@ -47,12 +43,7 @@ describe('Feature: Login', function (): void {
     });
 
     it('returns the authenticated user making the request', function (): void {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('mySoStrongPassword123.'),
-        ]);
-
+        $user = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword123');
         $user->save();
 
         $token = new IssueAccessToken()(
