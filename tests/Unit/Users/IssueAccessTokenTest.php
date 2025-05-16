@@ -44,7 +44,7 @@ describe('Unit: Issue Access Token', function (): void {
             ->toThrow(ValidationException::class);
     });
 
-    it('returns only the token string', function () {
+    it('returns only the token string', function (): void {
         $user = new User([
             'name' => 'Pierre',
             'email' => 'pierre@izix.eu',
