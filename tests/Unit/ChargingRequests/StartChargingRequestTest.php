@@ -7,31 +7,31 @@ use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingRequests\Write\AssignSlotToRequest;
+use App\ChargingRequests\Write\StartChargingRequest;
 use App\Contracts\RepositoryContract;
 use App\Users\User;
+use Carbon\CarbonImmutable;
+use Mockery\MockInterface;
 
 describe('Unit: Start Charging Request', function () {
     it('assigns a request to an available slot immediately', function () {
-        $user = new User([
-            'name' => 'Pierre',
-            'email' => 'pierre@izix.eu',
-            'password' => Hash::make('secret'),
-        ]);
+        $user = User::register('Pierre', 'pierre@izix.eu', 'secret');
         $user->save();
 
-        $chargingWindow = new ChargingWindow(Carbon::now(), Carbon::now()->addHour());
+        $chargingWindow = new ChargingWindow(CarbonImmutable::now(), CarbonImmutable::now()->addHour());
         $batteryPercentage = new BatteryPercentage(25);
 
-        $repository = Mockery::mock(RepositoryContract::class);
-        $repository->shouldReceive('hasActiveRequestFor')->with($user)->andReturnFalse();
-        $repository->shouldReceive('save')->andReturnUsing(fn ($request) => $request);
+        /** @var MockInterface&RepositoryContract $repository */
+        $repository = mockRepository();
+        $expectation = $repository->shouldReceive('hasActiveRequestFor');
+        $expectation->with($user)->andReturnFalse();
 
         $assignSlot = Mockery::mock(AssignSlotToRequest::class);
         $assignSlot->shouldReceive('__invoke')->once()->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest));
 
         $useCase = new StartChargingRequest(
             repository: $repository,
-            assignSlotToRequest: $assignSlot
+            assignSlot: $assignSlot
         );
 
         $chargingRequest = $useCase->execute(
@@ -51,3 +51,11 @@ describe('Unit: Start Charging Request', function () {
         // TODO
     });
 });
+
+function mockRepository(): RepositoryContract
+{
+    /** @var MockInterface&RepositoryContract $mock */
+    $mock = Mockery::mock(RepositoryContract::class);
+
+    return $mock;
+}
