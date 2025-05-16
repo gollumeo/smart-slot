@@ -43,7 +43,7 @@ describe('Feature: Login', function (): void {
     });
 
     it('returns the authenticated user making the request', function (): void {
-        $user = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword123');
+        $user = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword123.');
         $user->save();
 
         $token = new IssueAccessToken()(

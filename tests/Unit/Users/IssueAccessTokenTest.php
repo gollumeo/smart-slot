@@ -37,7 +37,7 @@ describe('Unit: Issue Access Token', function (): void {
     });
 
     it('returns only the token string', function (): void {
-        $user = User::register('Pierre', 'pierre@izix.eu', 'mySoStrongPassword123');
+        $user = User::register('Pierre', 'pierre@izix.eu', 'secret');
         $user->save();
 
         $token = new IssueAccessToken()($user->email, 'secret', 'Postman');
