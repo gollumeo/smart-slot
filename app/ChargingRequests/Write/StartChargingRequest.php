@@ -20,14 +20,7 @@ final readonly class StartChargingRequest
 
     public function execute(User $user, ChargingWindow $chargingWindow, BatteryPercentage $batteryPercentage): ChargingRequest
     {
-        $chargingRequest = new ChargingRequest([
-            'user_id' => $user->id,
-            'battery_percentage' => $batteryPercentage,
-            'starts_at' => $chargingWindow->start(),
-            'ends_at' => $chargingWindow->end(),
-            'status' => ChargingRequestStatus::QUEUED,
-        ]);
-
+        $chargingRequest = ChargingRequest::fromDomain($user->id, $batteryPercentage, $chargingWindow, ChargingRequestStatus::QUEUED);
         $this->repository->save($chargingRequest);
 
         ($this->assignSlot)($chargingRequest);
