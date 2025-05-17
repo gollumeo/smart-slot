@@ -9,14 +9,12 @@ use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingRequests\Write\AssignSlotToRequest;
 use App\ChargingRequests\Write\StartChargingRequest;
 use App\Contracts\RepositoryContract;
-use App\Users\User;
 use Carbon\CarbonImmutable;
 use Mockery\MockInterface;
 
 describe('Unit: Start Charging Request', function (): void {
     it('accepts a user charging request and attempts assignment', function (): void {
-        $user = User::register('Pierre', 'pierre@izix.eu', 'secret');
-        $user->save();
+        $user = $this->createTestUser();
 
         $chargingWindow = new ChargingWindow(CarbonImmutable::now(), CarbonImmutable::now()->addHour());
         $batteryPercentage = new BatteryPercentage(25);
@@ -48,9 +46,8 @@ describe('Unit: Start Charging Request', function (): void {
         expect($chargingRequest->status)->not()->toBeNull();
     });
 
-    it('places the charging request in a waiting line if no slot is available', function (): void {
-        $user = User::register('pierre', 'pierre@izix.eu', 'secret');
-        $user->save();
+    it('keeps the request in queue when no slot is available', function (): void {
+        $user = $this->createTestUser();
 
         $chargingWindow = new ChargingWindow(
             CarbonImmutable::now(),
@@ -85,7 +82,9 @@ describe('Unit: Start Charging Request', function (): void {
         expect($chargingRequest->status)->toBe(ChargingRequestStatus::QUEUED);
     });
 
-    it('rejects a new charging request if the user already has an active one', function () {
+    it('rejects a charging request when the user already has one in progress', function () {
+        $user = $this->createTestUser();
+
         // TODO
     });
 });
