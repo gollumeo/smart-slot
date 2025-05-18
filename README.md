@@ -77,6 +77,17 @@ future service.
 
 ---
 
+## 🧭 Philosophy
+
+This project deliberately favors code that’s explicit, testable, and aligned with business intent.
+
+It's not meant to be "clever", but rather maintainable—even if extended by someone else in six months.
+
+If any choices seem unusual or more structured than expected for such a scope, I’d be happy to discuss tradeoffs during
+a review.
+
+---
+
 ## 🛠️ Running the Project
 
 ```bash
