@@ -15,8 +15,9 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
         // TODO: Implement save() method.
     }
 
-    public function hasActiveRequestFor(User $user): void
+    public function hasActiveRequestFor(User $user): bool
     {
         // TODO: Implement hasActiveRequestFor() method.
+        return true;
     }
 }
