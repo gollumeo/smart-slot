@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected function createTestUser(): User
+    protected function createStaticTestUser(): User
     {
         $user = User::register('pierre', 'pierre@izix.eu', 'secret');
         $user->save();
