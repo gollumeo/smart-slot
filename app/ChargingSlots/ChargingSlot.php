@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\ChargingSlots\Write;
+namespace App\ChargingSlots;
 
 use Illuminate\Database\Eloquent\Model;
 
