@@ -8,13 +8,13 @@ use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
-use App\Contracts\RepositoryContract;
+use App\Contracts\ChargingRequestRepository;
 use App\Users\User;
 
 final readonly class StartChargingRequest
 {
     public function __construct(
-        private RepositoryContract $repository,
+        private ChargingRequestRepository $repository,
         private AssignSlotToRequest $assignSlot
     ) {}
 
