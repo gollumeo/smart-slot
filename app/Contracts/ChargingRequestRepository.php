@@ -11,5 +11,5 @@ interface ChargingRequestRepository
 {
     public function save(ChargingRequest $chargingRequest): void;
 
-    public function hasActiveRequestFor(User $user): void;
+    public function hasActiveRequestFor(User $user): bool;
 }
