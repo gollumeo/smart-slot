@@ -7,6 +7,7 @@ namespace App\ChargingRequests\Infrastructure\Repositories;
 use App\ChargingRequests\ChargingRequest;
 use App\Contracts\ChargingRequestRepository;
 use App\Users\User;
+use Illuminate\Support\Collection;
 
 final class ChargingRequestsEloquent implements ChargingRequestRepository
 {
@@ -19,5 +20,10 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
     {
         // TODO: Implement hasActiveRequestFor() method.
         return true;
+    }
+
+    public function getPendingRequests(): Collection
+    {
+        return new Collection();
     }
 }
