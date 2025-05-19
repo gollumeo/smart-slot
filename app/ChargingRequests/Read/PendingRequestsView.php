@@ -7,7 +7,7 @@ namespace App\ChargingRequests\Read;
 use App\Contracts\ChargingRequestRepository;
 use Illuminate\Support\Collection;
 
-final class PendingRequestsView
+final readonly class PendingRequestsView
 {
     public function __construct(private ChargingRequestRepository $repository) {}
 
