@@ -44,7 +44,7 @@ describe('Unit: End Charging Request', function (): void {
         $doneRequest = ChargingRequest::fromDomain($user->id, $batteryPercentage, $chargingWindow, ChargingRequestStatus::DONE);
 
         $repository = Mockery::mock(ChargingRequestRepository::class);
-        $repository->shouldReceive('save')->once()->with($doneRequest);
+        $repository->shouldNotReceive('save');
 
         $useCase = new EndChargingRequest($repository);
 
