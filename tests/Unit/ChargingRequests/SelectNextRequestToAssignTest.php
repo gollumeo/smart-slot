@@ -24,6 +24,12 @@ describe('Unit: Select Next Request to Assign', function (): void {
         $nextRequestToAssign = $useCase(collect([$lowPriorityRequest, $midPriorityRequest, $highPriorityRequest]));
 
         expect($nextRequestToAssign)->toBe($highPriorityRequest);
+    });
 
+    it('returns null if the queue is empty', function (): void {
+        $useCase = new SelectNextRequestToAssign();
+        $nextRequestToAssign = $useCase(collect());
+
+        expect($nextRequestToAssign)->toBeNull();
     });
 });
