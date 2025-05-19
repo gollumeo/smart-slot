@@ -30,4 +30,15 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
             ->orderBy('battery_percentage')
             ->get();
     }
+
+    public function getActiveRequestFor(User $user): ?ChargingRequest
+    {
+        return ChargingRequest::where('user_id', $user->id)
+            ->whereIn('status', [
+                ChargingRequestStatus::QUEUED,
+                ChargingRequestStatus::ASSIGNED,
+            ])
+            ->orderByDesc('created_at')
+            ->first();
+    }
 }
