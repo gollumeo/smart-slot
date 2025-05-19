@@ -7,14 +7,12 @@ namespace App\ChargingRequests\Write;
 use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\Contracts\ChargingRequestRepository;
-use App\Contracts\ChargingSlotRepository;
 use LogicException;
 
 final readonly class EndChargingRequest
 {
     public function __construct(
         private ChargingRequestRepository $chargingRequests,
-        private ChargingSlotRepository $slots,
         private AssignSlotToRequest $assignSlot,
         private SelectNextRequestToAssign $selectNextRequest,
     ) {}
