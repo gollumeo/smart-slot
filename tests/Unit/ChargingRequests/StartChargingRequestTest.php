@@ -118,13 +118,11 @@ describe('Unit: Start Charging Request', function (): void {
 
 function mockRepository(): ChargingRequestRepository
 {
-    /** @var MockInterface&ChargingRequestRepository $mock */
     return Mockery::mock(ChargingRequestRepository::class);
 }
 
 function mockEligibility(callable $expectations): ChargingRequestEligibility
 {
-    /** @var MockInterface&ChargingRequestEligibility $mock */
     $mock = Mockery::mock(ChargingRequestEligibility::class);
     $expectations($mock);
 
