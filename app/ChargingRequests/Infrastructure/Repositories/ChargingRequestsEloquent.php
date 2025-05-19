@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ChargingRequests\Infrastructure\Repositories;
 
 use App\ChargingRequests\ChargingRequest;
+use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\Contracts\ChargingRequestRepository;
 use App\Users\User;
 use Illuminate\Support\Collection;
@@ -24,6 +25,9 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
 
     public function getPendingRequests(): Collection
     {
-        return new Collection();
+        return ChargingRequest::where('status', ChargingRequestStatus::QUEUED)
+            ->orderBy('starts_at')
+            ->orderBy('battery_percentage')
+            ->get();
     }
 }
