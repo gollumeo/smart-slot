@@ -4,4 +4,18 @@ declare(strict_types=1);
 
 namespace App\ChargingSlots\Infrastructure\Repositories;
 
-final class ChargingSlotsEloquent {}
+use App\ChargingSlots\ChargingSlot;
+use App\Contracts\ChargingSlotRepository;
+
+final class ChargingSlotsEloquent implements ChargingSlotRepository
+{
+    public function findAvailableSlot(): ?ChargingSlot
+    {
+        // TODO: Implement findAvailableSlot() method.
+    }
+
+    public function save(ChargingSlot $slot): void
+    {
+        // TODO: Implement save() method.
+    }
+}
