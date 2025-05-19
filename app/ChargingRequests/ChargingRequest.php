@@ -8,6 +8,7 @@ use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
 use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
 final class ChargingRequest extends Model
 {
@@ -21,5 +22,14 @@ final class ChargingRequest extends Model
         $instance->status = $status;
 
         return $instance;
+    }
+
+    public function markAs(ChargingRequestStatus $status): void
+    {
+        if ($status === ChargingRequestStatus::ASSIGNED && ! $this->slot_id) {
+            throw new LogicException('Cannot assign a request without a slot.');
+        }
+
+        $this->status = $status;
     }
 }
