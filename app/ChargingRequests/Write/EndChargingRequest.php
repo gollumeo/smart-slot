@@ -7,11 +7,17 @@ namespace App\ChargingRequests\Write;
 use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\Contracts\ChargingRequestRepository;
+use App\Contracts\ChargingSlotRepository;
 use LogicException;
 
-final class EndChargingRequest
+final readonly class EndChargingRequest
 {
-    public function __construct(private readonly ChargingRequestRepository $chargingRequests) {}
+    public function __construct(
+        private ChargingRequestRepository $chargingRequests,
+        private ChargingSlotRepository $slots,
+        private AssignSlotToRequest $assignSlot,
+        private SelectNextRequestToAssign $selectNextRequest,
+    ) {}
 
     public function __invoke(ChargingRequest $chargingRequest): void
     {
@@ -21,5 +27,12 @@ final class EndChargingRequest
 
         $chargingRequest->markAs(ChargingRequestStatus::DONE);
         $this->chargingRequests->save($chargingRequest);
+
+        $queuedRequests = $this->chargingRequests->getPendingRequests();
+        $next = ($this->selectNextRequest)($queuedRequests);
+
+        if ($next) {
+            ($this->assignSlot)($next);
+        }
     }
 }

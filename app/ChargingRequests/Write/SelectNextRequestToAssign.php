@@ -7,7 +7,7 @@ namespace App\ChargingRequests\Write;
 use App\ChargingRequests\ChargingRequest;
 use Illuminate\Support\Collection;
 
-final class SelectNextRequestToAssign
+class SelectNextRequestToAssign
 {
     public function __invoke(Collection $queuedRequests): ?ChargingRequest
     {
