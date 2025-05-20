@@ -39,7 +39,7 @@ describe('Unit: Start Charging Request', function (): void {
             ->once()
             ->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest));
 
-        $eligibility = mockEligibility(fn ($m) => $m->shouldReceive('ensureUserCanStart')->once()->with($user));
+        $eligibility = $this->mockEligibility(fn (MockInterface $mock) => $mock->shouldReceive('ensureUserCanStart')->once()->with($user));
 
         $useCase = new StartChargingRequest(
             repository: $repository,
