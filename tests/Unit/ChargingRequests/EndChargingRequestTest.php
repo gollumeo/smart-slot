@@ -5,38 +5,45 @@ declare(strict_types=1);
 use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
-use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingRequests\Write\AssignSlotToRequest;
 use App\ChargingRequests\Write\EndChargingRequest;
 use App\ChargingRequests\Write\SelectNextRequestToAssign;
 use App\Contracts\ChargingRequestRepository;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Mockery\MockInterface;
+use Tests\TestCase;
 
 describe('Unit: End Charging Request', function (): void {
     it('finalizes a charging request and releases the occupied charging slot', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
-
-        $start = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 12:00');
-        $end = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 15:00');
-        $chargingWindow = new ChargingWindow($start, $end);
-
         $batteryPercentage = new BatteryPercentage(75);
+        $chargingWindow = $this->createWindow('19-05-2025 12:00', '19-05-2025 15:00');
 
-        $chargingRequest = ChargingRequest::fromDomain($user->id, $batteryPercentage, $chargingWindow, ChargingRequestStatus::QUEUED);
+        $chargingRequest = ChargingRequest::fromDomain(
+            userId: $user->id,
+            batteryPercentage: $batteryPercentage,
+            chargingWindow: $chargingWindow
+        );
         $chargingRequest->slot_id = 42;
 
-        $repository = Mockery::mock(ChargingRequestRepository::class);
+        /** @var MockInterface&ChargingRequestRepository $repository */
+        $repository = $this->makeMock(ChargingRequestRepository::class);
         $repository->shouldReceive('save')->once()->with($chargingRequest);
         $repository->shouldReceive('getPendingRequests')->once()->andReturn(collect());
 
-        $selectNextRequest = Mockery::mock(SelectNextRequestToAssign::class);
+        /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
+        $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
         $selectNextRequest->shouldReceive('__invoke')->once()
             ->with(Mockery::type(Collection::class))
             ->andReturn(null);
+
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
+
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
-            assignSlot: Mockery::mock(AssignSlotToRequest::class),
+            assignSlot: $assignSlot,
             selectNextRequest: $selectNextRequest,
         );
 
@@ -46,58 +53,67 @@ describe('Unit: End Charging Request', function (): void {
     });
 
     it('cannot end a request which is already terminale', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
 
-        $start = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 12:00');
-        $end = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 15:00');
-        $chargingWindow = new ChargingWindow($start, $end);
+        $chargingWindow = $this->createWindow('19-05-2025 12:00', '19-05-2025 15:00');
 
         $batteryPercentage = new BatteryPercentage(75);
 
         $doneRequest = ChargingRequest::fromDomain($user->id, $batteryPercentage, $chargingWindow, ChargingRequestStatus::DONE);
 
-        $repository = Mockery::mock(ChargingRequestRepository::class);
+        /** @var MockInterface&ChargingRequestRepository $repository */
+        $repository = $this->makeMock(ChargingRequestRepository::class);
         $repository->shouldNotReceive('save');
+
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
+
+        /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
+        $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
 
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
-            assignSlot: Mockery::mock(AssignSlotToRequest::class),
-            selectNextRequest: Mockery::mock(SelectNextRequestToAssign::class),
+            assignSlot: $assignSlot,
+            selectNextRequest: $selectNextRequest,
         );
 
         expect(fn () => $useCase($doneRequest))->toThrow(LogicException::class);
     });
 
     it('assigns the freed slot to the next queued request, if one exists', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
 
-        $start = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 08:00');
-        $end = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 12:00');
+        $chargingWindow = $this->createWindow('19-05-2025 08:00', '19-05-2025 12:00');
 
         $finishedRequest = ChargingRequest::fromDomain(
             userId: $user->id,
             batteryPercentage: new BatteryPercentage(50),
-            chargingWindow: new ChargingWindow($start, $end),
+            chargingWindow: $chargingWindow,
             status: ChargingRequestStatus::ASSIGNED
         );
         $finishedRequest->slot_id = 42;
 
         $highPriorityRequest = new ChargingRequest();
-        $highPriorityRequest->starts_at = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 13:00');
+        $highPriorityRequest->starts_at = $this->parseCarbon('19-05-2025 13:00');
         $highPriorityRequest->battery_percentage = 20;
 
         $lowPriorityRequest = new ChargingRequest();
-        $lowPriorityRequest->starts_at = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 13:00');
+        $lowPriorityRequest->starts_at = $this->parseCarbon('19-05-2025 13:00');
         $lowPriorityRequest->battery_percentage = 80;
 
-        $chargingRepository = Mockery::mock(ChargingRequestRepository::class);
+        /** @var MockInterface&ChargingRequestRepository $chargingRepository */
+        $chargingRepository = $this->makeMock(ChargingRequestRepository::class);
         $chargingRepository->shouldReceive('save')->once()->with($finishedRequest);
         $chargingRepository->shouldReceive('getPendingRequests')->once()->andReturn(collect([$highPriorityRequest, $lowPriorityRequest]));
 
-        $assignSlot = Mockery::mock(AssignSlotToRequest::class);
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
         $assignSlot->shouldReceive('__invoke')->once()->with($highPriorityRequest);
 
-        $selectNextRequest = Mockery::mock(SelectNextRequestToAssign::class);
+        /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
+        $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
         $selectNextRequest->shouldReceive('__invoke')->once()
             ->with(Mockery::on(fn (Collection $collection) => $collection->contains($highPriorityRequest)))
             ->andReturn($highPriorityRequest);
@@ -112,11 +128,10 @@ describe('Unit: End Charging Request', function (): void {
     });
 
     it('does nothing when no request is selected', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
 
-        $start = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 12:00');
-        $end = CarbonImmutable::createFromFormat('d-m-Y H:i', '19-05-2025 15:00');
-        $chargingWindow = new ChargingWindow($start, $end);
+        $chargingWindow = $this->createWindow('19-05-2025 12:00', '19-05-2025 15:00');
 
         $chargingRequest = ChargingRequest::fromDomain(
             userId: $user->id,
@@ -126,12 +141,14 @@ describe('Unit: End Charging Request', function (): void {
         );
         $chargingRequest->slot_id = 42;
 
-        $repository = Mockery::mock(ChargingRequestRepository::class);
+        /** @var MockInterface&ChargingRequestRepository $repository */
+        $repository = $this->makeMock(ChargingRequestRepository::class);
         $repository->shouldReceive('save')->once()->with($chargingRequest);
         $repository->shouldReceive('getPendingRequests')->once()->andReturn(collect());
 
-        $selector = Mockery::mock(SelectNextRequestToAssign::class);
-        $selector->shouldReceive('__invoke')->once()
+        /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
+        $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
+        $selectNextRequest->shouldReceive('__invoke')->once()
             ->with(Mockery::type(Collection::class))
             ->andReturn(null);
 
@@ -141,7 +158,7 @@ describe('Unit: End Charging Request', function (): void {
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
             assignSlot: $assignSlot,
-            selectNextRequest: $selector,
+            selectNextRequest: $selectNextRequest,
         );
 
         $useCase($chargingRequest);

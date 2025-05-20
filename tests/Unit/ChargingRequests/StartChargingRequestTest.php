@@ -13,28 +13,31 @@ use App\Exceptions\UserAlreadyHasActiveChargingRequest;
 use App\Policies\ChargingRequestEligibility;
 use Carbon\CarbonImmutable;
 use Mockery\MockInterface;
+use Tests\TestCase;
 
 /**
  * @throws UserAlreadyHasActiveChargingRequest
  */
 describe('Unit: Start Charging Request', function (): void {
     it('accepts a user charging request and attempts assignment', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
 
         $chargingWindow = new ChargingWindow(CarbonImmutable::now(), CarbonImmutable::now()->addHour());
         $batteryPercentage = new BatteryPercentage(25);
 
         /** @var MockInterface&ChargingRequestRepository $repository */
-        $repository = mockRepository();
+        $repository = $this->makeMock(ChargingRequestRepository::class);
         $repository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest))
-            ->andReturnUsing(fn ($request) => $request);
+            ->andReturnUsing(fn (ChargingRequest $request) => $request);
 
-        $assignSlot = Mockery::mock(AssignSlotToRequest::class);
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
         $assignSlot->shouldReceive('__invoke')
             ->once()
-            ->with(Mockery::on(fn (ChargingRequest $request) => $request instanceof ChargingRequest));
+            ->with(Mockery::on(fn ($request) => $request instanceof ChargingRequest));
 
         $eligibility = mockEligibility(fn ($m) => $m->shouldReceive('ensureUserCanStart')->once()->with($user));
 
@@ -54,6 +57,7 @@ describe('Unit: Start Charging Request', function (): void {
     });
 
     it('keeps the request in queue when no slot is available', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
 
         $chargingWindow = new ChargingWindow(
@@ -64,7 +68,7 @@ describe('Unit: Start Charging Request', function (): void {
         $batteryPercentage = new BatteryPercentage(25);
 
         /** @var MockInterface&ChargingRequestRepository $repository */
-        $repository = mockRepository();
+        $repository = $this->makeMock(ChargingRequestRepository::class);
         $repository->shouldReceive('save')->once()
             ->andReturnUsing(fn (ChargingRequest $request) => $request);
 
@@ -72,7 +76,7 @@ describe('Unit: Start Charging Request', function (): void {
         $assignSlot->shouldReceive('__invoke')->once()
             ->with(Mockery::on(fn (ChargingRequest $request) => $request->status === ChargingRequestStatus::QUEUED));
 
-        $eligibility = mockEligibility(fn (MockInterface $eligibility) => $eligibility->shouldReceive('ensureUserCanStart')->once()->with($user));
+        $eligibility = $this->mockEligibility(fn (MockInterface $eligibility) => $eligibility->shouldReceive('ensureUserCanStart')->once()->with($user));
 
         $useCase = new StartChargingRequest(
             repository: $repository,
@@ -90,16 +94,19 @@ describe('Unit: Start Charging Request', function (): void {
     });
 
     it('rejects a charging request when the user already has one in progress', function (): void {
+        /** @var TestCase $this */
         $user = $this->createStaticTestUser();
         $batteryPercentage = new BatteryPercentage(25);
-        $chargingWindow = new ChargingWindow(
-            CarbonImmutable::createFromFormat('d-m-Y H:i', '16-05-2025 09:00'),
-            CarbonImmutable::createFromFormat('d-m-Y H:i', '16-05-2025 14:00')
-        );
+        $chargingWindow = $this->createWindow('16-05-2025 09:00', '16-05-2025 14:00');
 
-        $repository = mockRepository();
-        $assignSlot = Mockery::mock(AssignSlotToRequest::class);
-        $eligibility = mockEligibility(fn ($m) => $m->shouldReceive('ensureUserCanStart')->once()->with($user)
+        /** @var MockInterface&ChargingRequestRepository $repository */
+        $repository = $this->makeMock(ChargingRequestRepository::class);
+
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
+
+        /** @var MockInterface&ChargingRequestEligibility $eligibility */
+        $eligibility = $this->mockEligibility(fn (MockInterface $mock) => $mock->shouldReceive('ensureUserCanStart')->once()->with($user)
             ->andThrow(UserAlreadyHasActiveChargingRequest::class));
 
         $useCase = new StartChargingRequest(
@@ -115,16 +122,3 @@ describe('Unit: Start Charging Request', function (): void {
         ))->toThrow(UserAlreadyHasActiveChargingRequest::class);
     });
 });
-
-function mockRepository(): ChargingRequestRepository
-{
-    return Mockery::mock(ChargingRequestRepository::class);
-}
-
-function mockEligibility(callable $expectations): ChargingRequestEligibility
-{
-    $mock = Mockery::mock(ChargingRequestEligibility::class);
-    $expectations($mock);
-
-    return $mock;
-}
