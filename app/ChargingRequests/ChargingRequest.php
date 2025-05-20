@@ -7,15 +7,16 @@ namespace App\ChargingRequests;
 use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
-use Carbon\CarbonInterface;
+use App\ChargingSlots\ChargingSlot;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use LogicException;
 
 /**
  * @property int $user_id
  * @property float $battery_percentage
- * @property CarbonInterface $starts_at
- * @property CarbonInterface $ends_at
+ * @property CarbonImmutable $starts_at
+ * @property CarbonImmutable $ends_at
  * @property ChargingRequestStatus $status
  * @property ?int $slot_id
  */
@@ -33,6 +34,17 @@ final class ChargingRequest extends Model
         return $instance;
     }
 
+    public function chargingWindow(): ChargingWindow
+    {
+        return new ChargingWindow($this->starts_at, $this->ends_at);
+    }
+
+    public function assignTo(ChargingSlot $slot): void
+    {
+        $this->slot_id = $slot->id;
+        $this->markAs(ChargingRequestStatus::ASSIGNED);
+    }
+
     public function markAs(ChargingRequestStatus $status): void
     {
         if ($status === ChargingRequestStatus::ASSIGNED && ! $this->slot_id) {
@@ -40,5 +52,10 @@ final class ChargingRequest extends Model
         }
 
         $this->status = $status;
+    }
+
+    public function conflictsWith(ChargingWindow $window): bool
+    {
+        return $this->starts_at < $window->end() && $this->ends_at > $window->start();
     }
 }
