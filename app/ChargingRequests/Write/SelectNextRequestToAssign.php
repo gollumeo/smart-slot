@@ -9,6 +9,10 @@ use Illuminate\Support\Collection;
 
 class SelectNextRequestToAssign
 {
+    /**
+     * @param Collection<int, ChargingRequest> $queuedRequests
+     * @return ChargingRequest|null
+     */
     public function __invoke(Collection $queuedRequests): ?ChargingRequest
     {
         return $queuedRequests
