@@ -47,7 +47,7 @@ describe('Unit: End Charging Request', function (): void {
             selectNextRequest: $selectNextRequest,
         );
 
-        $useCase($chargingRequest);
+        $useCase->execute($chargingRequest);
 
         expect($chargingRequest->status)->toBe(ChargingRequestStatus::DONE);
     });
@@ -78,7 +78,7 @@ describe('Unit: End Charging Request', function (): void {
             selectNextRequest: $selectNextRequest,
         );
 
-        expect(fn () => $useCase($doneRequest))->toThrow(LogicException::class);
+        expect(fn () => $useCase->execute($doneRequest))->toThrow(LogicException::class);
     });
 
     it('assigns the freed slot to the next queued request, if one exists', function (): void {
@@ -124,7 +124,9 @@ describe('Unit: End Charging Request', function (): void {
             selectNextRequest: $selectNextRequest
         );
 
-        $useCase($finishedRequest);
+        $useCase->execute($finishedRequest);
+
+        expect($finishedRequest->status)->toBe(ChargingRequestStatus::DONE);
     });
 
     it('does nothing when no request is selected', function (): void {
@@ -161,7 +163,7 @@ describe('Unit: End Charging Request', function (): void {
             selectNextRequest: $selectNextRequest,
         );
 
-        $useCase($chargingRequest);
+        $useCase->execute($chargingRequest);
 
         expect($chargingRequest->status)->toBe(ChargingRequestStatus::DONE);
     });

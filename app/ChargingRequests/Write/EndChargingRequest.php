@@ -17,7 +17,7 @@ final readonly class EndChargingRequest
         private SelectNextRequestToAssign $selectNextRequest,
     ) {}
 
-    public function __invoke(ChargingRequest $chargingRequest): void
+    public function execute(ChargingRequest $chargingRequest): void
     {
         if ($chargingRequest->status->isTerminal()) {
             throw new LogicException('Cannot end a request that is already finished.');
