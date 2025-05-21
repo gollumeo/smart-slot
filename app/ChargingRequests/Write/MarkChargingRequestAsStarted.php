@@ -17,10 +17,6 @@ final readonly class MarkChargingRequestAsStarted
      */
     public function execute(ChargingRequest $chargingRequest): void
     {
-        if ($chargingRequest->status !== ChargingRequestStatus::ASSIGNED) {
-            throw new CannotStartChargingRequest();
-        }
-
         $chargingRequest->markAs(ChargingRequestStatus::CHARGING);
     }
 }

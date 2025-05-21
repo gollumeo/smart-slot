@@ -50,12 +50,20 @@ describe('Unit: Mark Charging Request As Started', function (): void {
         expect(fn () => $useCase->execute($chargingRequest))->toThrow(CannotStartChargingRequest::class);
     });
 
-    it('cannot mark a request as charging if it has not been previously marked as assigned', function (): void {
-        // TODO
-    });
-
     it('cannot mark a terminal request as charging', function (): void {
-        // TODO
+        /** @var TestCase $this */
+        $user = $this->createStaticTestUser();
+
+        $chargingRequest = ChargingRequest::fromDomain(
+            userId: $user->id,
+            batteryPercentage: new BatteryPercentage(50),
+            chargingWindow: $this->createWindow('21-05-2025 12:00', '21-05-2025 16:00'),
+            status: ChargingRequestStatus::DONE
+        );
+
+        $useCase = new MarkChargingRequestAsStarted();
+
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(CannotStartChargingRequest::class);
     });
 
     it('does not start if no slot is assigned to the request', function (): void {

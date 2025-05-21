@@ -9,6 +9,8 @@ use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingSlots\ChargingSlot;
 use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -51,11 +53,21 @@ final class ChargingRequest extends Model
 
     /**
      * @throws CannotAssignRequestWithoutSlot
+     * @throws CannotStartChargingRequest
+     * @throws ChargingRequestAlreadyFinished
      */
     public function markAs(ChargingRequestStatus $status): void
     {
+        if ($this->status->isTerminal()) {
+            throw new ChargingRequestAlreadyFinished();
+        }
+
         if ($status === ChargingRequestStatus::ASSIGNED && ! $this->slot_id) {
             throw new CannotAssignRequestWithoutSlot();
+        }
+
+        if ($status === ChargingRequestStatus::CHARGING && $this->status !== ChargingRequestStatus::ASSIGNED) {
+            throw new CannotStartChargingRequest();
         }
 
         $this->status = $status;
