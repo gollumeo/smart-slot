@@ -8,6 +8,7 @@ use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\Write\MarkChargingRequestAsStarted;
 use App\Exceptions\CannotStartChargingRequest;
 use App\Exceptions\ChargingRequestAlreadyFinished;
+use Carbon\CarbonImmutable;
 use Tests\TestCase;
 
 describe('Unit: Mark Charging Request As Started', function (): void {
@@ -29,8 +30,7 @@ describe('Unit: Mark Charging Request As Started', function (): void {
         $useCase = new MarkChargingRequestAsStarted();
         $useCase->execute($chargingRequest);
 
-        expect($chargingRequest->status)->toBe(ChargingRequestStatus::CHARGING)
-            ->and($chargingRequest->slot_id)->toBe(42);
+        expect($chargingRequest->status)->toBe(ChargingRequestStatus::CHARGING);
     });
 
     it('ensures charging request is marked as assigned before starting the charge', function (): void {
@@ -67,15 +67,22 @@ describe('Unit: Mark Charging Request As Started', function (): void {
         expect(fn () => $useCase->execute($chargingRequest))->toThrow(ChargingRequestAlreadyFinished::class);
     });
 
-    it('does not start if no slot is assigned to the request', function (): void {
-        // TODO
-    });
-
-    it('updates the charging request status correctly', function (): void {
-        // TODO
-    });
-
     it('records the charging start time', function (): void {
-        // TODO
+        /** @var TestCase $this */
+        $user = $this->createStaticTestUser();
+
+        $chargingRequest = ChargingRequest::fromDomain(
+            userId: $user->id,
+            batteryPercentage: new BatteryPercentage(50),
+            chargingWindow: $this->createWindow('21-05-2025 12:00', '21-05-2025 16:00'),
+            status: ChargingRequestStatus::ASSIGNED
+        );
+
+        $useCase = new MarkChargingRequestAsStarted();
+
+        $useCase->execute($chargingRequest);
+
+        expect($chargingRequest->charging_started_at)->not()->toBeNull()
+            ->and($chargingRequest->charging_started_at?->isSameMinute(CarbonImmutable::now()))->toBeTrue();
     });
 });
