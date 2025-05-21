@@ -14,9 +14,9 @@ use App\Exceptions\ChargingRequestAlreadyFinished;
 final class CancelChargingRequest
 {
     public function __construct(
-        private readonly ChargingRequestRepository $requests,
+        private readonly ChargingRequestRepository $chargingRequests,
         private readonly AssignSlotToRequest $assignSlot,
-        private SelectNextRequestToAssign $selectNextRequest,
+        private readonly SelectNextRequestToAssign $selectNextRequest,
     ) {}
 
     /**
@@ -26,8 +26,24 @@ final class CancelChargingRequest
      */
     public function execute(ChargingRequest $chargingRequest): void
     {
-        $chargingRequest->markAs(ChargingRequestStatus::CANCELLED);
+        if ($chargingRequest->status->isTerminal()) {
+            throw new ChargingRequestAlreadyFinished();
+        }
 
-        $this->requests->save($chargingRequest);
+        $wasAssigned = $chargingRequest->status->isAssigned();
+
+        $chargingRequest->markAs(ChargingRequestStatus::CANCELLED);
+        $this->chargingRequests->save($chargingRequest);
+
+        if (! $wasAssigned) {
+            return;
+        }
+
+        $queuedRequests = $this->chargingRequests->getPendingRequests();
+        $next = ($this->selectNextRequest)($queuedRequests);
+
+        if ($next) {
+            ($this->assignSlot)($next);
+        }
     }
 }
