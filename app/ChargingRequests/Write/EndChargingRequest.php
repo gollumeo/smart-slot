@@ -7,7 +7,9 @@ namespace App\ChargingRequests\Write;
 use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\Contracts\ChargingRequestRepository;
-use LogicException;
+use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 
 final readonly class EndChargingRequest
 {
@@ -17,10 +19,15 @@ final readonly class EndChargingRequest
         private SelectNextRequestToAssign $selectNextRequest,
     ) {}
 
+    /**
+     * @throws CannotAssignRequestWithoutSlot
+     * @throws ChargingRequestAlreadyFinished
+     * @throws CannotStartChargingRequest
+     */
     public function execute(ChargingRequest $chargingRequest): void
     {
         if ($chargingRequest->status->isTerminal()) {
-            throw new LogicException('Cannot end a request that is already finished.');
+            throw new ChargingRequestAlreadyFinished();
         }
 
         $chargingRequest->markAs(ChargingRequestStatus::DONE);

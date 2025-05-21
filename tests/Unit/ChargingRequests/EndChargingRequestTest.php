@@ -9,6 +9,7 @@ use App\ChargingRequests\Write\AssignSlotToRequest;
 use App\ChargingRequests\Write\EndChargingRequest;
 use App\ChargingRequests\Write\SelectNextRequestToAssign;
 use App\Contracts\ChargingRequestRepository;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 use Illuminate\Support\Collection;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -78,7 +79,7 @@ describe('Unit: End Charging Request', function (): void {
             selectNextRequest: $selectNextRequest,
         );
 
-        expect(fn () => $useCase->execute($doneRequest))->toThrow(LogicException::class);
+        expect(fn () => $useCase->execute($doneRequest))->toThrow(ChargingRequestAlreadyFinished::class);
     });
 
     it('assigns the freed slot to the next queued request, if one exists', function (): void {
