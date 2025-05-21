@@ -8,7 +8,7 @@ use App\ChargingRequests\Infrastructure\Repositories\ChargingRequestsEloquent;
 use App\Contracts\ChargingRequestRepository;
 use Illuminate\Support\ServiceProvider;
 
-final class ChargingRequestProvider extends ServiceProvider
+final class ChargingRequestServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
