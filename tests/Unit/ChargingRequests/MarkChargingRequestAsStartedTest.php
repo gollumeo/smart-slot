@@ -24,8 +24,8 @@ describe('Unit: Mark Charging Request As Started', function (): void {
 
         $chargingRequest->markAs(ChargingRequestStatus::ASSIGNED);
 
-        $useCase = new MarkChargingRequestAsStarted($chargingRequest);
-        $useCase();
+        $useCase = new MarkChargingRequestAsStarted();
+        $useCase->execute($chargingRequest);
 
         expect($chargingRequest->status)->toBe(ChargingRequestStatus::CHARGING)
             ->and($chargingRequest->slot_id)->toBe(42);
@@ -44,9 +44,9 @@ describe('Unit: Mark Charging Request As Started', function (): void {
         );
         $chargingRequest->slot_id = 42;
 
-        $useCase = new MarkChargingRequestAsStarted($chargingRequest);
+        $useCase = new MarkChargingRequestAsStarted();
 
-        expect(fn () => $useCase())->toThrow(LogicException::class);
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(LogicException::class);
     });
 
     it('ensures charging request is assigned to a slot before starting the charge', function (): void {
@@ -63,9 +63,9 @@ describe('Unit: Mark Charging Request As Started', function (): void {
 
         $chargingRequest->markAs(ChargingRequestStatus::ASSIGNED);
 
-        $useCase = new MarkChargingRequestAsStarted($chargingRequest);
+        $useCase = new MarkChargingRequestAsStarted();
 
-        expect(fn () => $useCase())->toThrow(LogicException::class);
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(LogicException::class);
     });
 
     it('cannot mark a request as charging if it has not been previously marked as assigned', function (): void {

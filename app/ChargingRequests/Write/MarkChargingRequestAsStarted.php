@@ -9,10 +9,8 @@ use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 
 final readonly class MarkChargingRequestAsStarted
 {
-    public function __construct(private ChargingRequest $chargingRequest) {}
-
-    public function __invoke(): void
+    public function execute(ChargingRequest $chargingRequest): void
     {
-        $this->chargingRequest->markAs(ChargingRequestStatus::CHARGING);
+        $chargingRequest->markAs(ChargingRequestStatus::CHARGING);
     }
 }
