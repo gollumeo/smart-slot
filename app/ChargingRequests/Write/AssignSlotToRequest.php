@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\ChargingRequests\Write;
 
 use App\ChargingRequests\ChargingRequest;
-use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingSlots\ChargingSlot;
 use App\Contracts\ChargingSlotRepository;
 use App\Contracts\SlotAvailabilityRules;
+use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 
 class AssignSlotToRequest
 {
@@ -18,6 +20,11 @@ class AssignSlotToRequest
         private readonly SlotAvailabilityRules $slotAvailability,
     ) {}
 
+    /**
+     * @throws CannotStartChargingRequest
+     * @throws CannotAssignRequestWithoutSlot
+     * @throws ChargingRequestAlreadyFinished
+     */
     public function __invoke(ChargingRequest $chargingRequest): void
     {
         $availableSlot = $this->findFirstAvailableSlotFor($chargingRequest->chargingWindow());
