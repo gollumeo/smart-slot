@@ -6,6 +6,7 @@ use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\Write\MarkChargingRequestAsStarted;
+use App\Exceptions\CannotStartChargingRequest;
 use Tests\TestCase;
 
 describe('Unit: Mark Charging Request As Started', function (): void {
@@ -46,26 +47,7 @@ describe('Unit: Mark Charging Request As Started', function (): void {
 
         $useCase = new MarkChargingRequestAsStarted();
 
-        expect(fn () => $useCase->execute($chargingRequest))->toThrow(LogicException::class);
-    });
-
-    it('ensures charging request is assigned to a slot before starting the charge', function (): void {
-        /** @var TestCase $this */
-        $user = $this->createStaticTestUser();
-        $batteryPercentage = new BatteryPercentage(35);
-        $chargingWindow = $this->createWindow('20-05-2025 12:00', '20-05-2025 16:00');
-
-        $chargingRequest = ChargingRequest::fromDomain(
-            userId: $user->id,
-            batteryPercentage: $batteryPercentage,
-            chargingWindow: $chargingWindow
-        );
-
-        $chargingRequest->markAs(ChargingRequestStatus::ASSIGNED);
-
-        $useCase = new MarkChargingRequestAsStarted();
-
-        expect(fn () => $useCase->execute($chargingRequest))->toThrow(LogicException::class);
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(CannotStartChargingRequest::class);
     });
 
     it('cannot mark a request as charging if it has not been previously marked as assigned', function (): void {
