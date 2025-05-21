@@ -16,4 +16,9 @@ enum ChargingRequestStatus: string
     {
         return in_array($this, [self::DONE, self::CANCELLED]);
     }
+
+    public function isAssigned(): bool
+    {
+        return $this === self::ASSIGNED;
+    }
 }
