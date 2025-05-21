@@ -6,11 +6,21 @@ namespace App\ChargingRequests\Write;
 
 use App\ChargingRequests\ChargingRequest;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
+use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
 
 final readonly class MarkChargingRequestAsStarted
 {
+    /**
+     * @throws CannotStartChargingRequest
+     * @throws CannotAssignRequestWithoutSlot
+     */
     public function execute(ChargingRequest $chargingRequest): void
     {
+        if ($chargingRequest->status !== ChargingRequestStatus::ASSIGNED) {
+            throw new CannotStartChargingRequest();
+        }
+
         $chargingRequest->markAs(ChargingRequestStatus::CHARGING);
     }
 }

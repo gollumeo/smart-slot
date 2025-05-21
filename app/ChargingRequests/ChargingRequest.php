@@ -8,9 +8,9 @@ use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\ValueObjects\ChargingWindow;
 use App\ChargingSlots\ChargingSlot;
+use App\Exceptions\CannotAssignRequestWithoutSlot;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
-use LogicException;
 
 /**
  * @property int $user_id
@@ -19,6 +19,7 @@ use LogicException;
  * @property CarbonImmutable $ends_at
  * @property ChargingRequestStatus $status
  * @property ?int $slot_id
+ * @property ?CarbonImmutable $charging_started_at
  */
 final class ChargingRequest extends Model
 {
@@ -39,16 +40,22 @@ final class ChargingRequest extends Model
         return new ChargingWindow($this->starts_at, $this->ends_at);
     }
 
+    /**
+     * @throws CannotAssignRequestWithoutSlot
+     */
     public function assignTo(ChargingSlot $slot): void
     {
         $this->slot_id = $slot->id;
         $this->markAs(ChargingRequestStatus::ASSIGNED);
     }
 
+    /**
+     * @throws CannotAssignRequestWithoutSlot
+     */
     public function markAs(ChargingRequestStatus $status): void
     {
         if ($status === ChargingRequestStatus::ASSIGNED && ! $this->slot_id) {
-            throw new LogicException('Cannot assign a request without a slot.');
+            throw new CannotAssignRequestWithoutSlot();
         }
 
         $this->status = $status;
