@@ -7,6 +7,7 @@ use App\ChargingRequests\ValueObjects\BatteryPercentage;
 use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\Write\MarkChargingRequestAsStarted;
 use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 use Tests\TestCase;
 
 describe('Unit: Mark Charging Request As Started', function (): void {
@@ -63,7 +64,7 @@ describe('Unit: Mark Charging Request As Started', function (): void {
 
         $useCase = new MarkChargingRequestAsStarted();
 
-        expect(fn () => $useCase->execute($chargingRequest))->toThrow(CannotStartChargingRequest::class);
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(ChargingRequestAlreadyFinished::class);
     });
 
     it('does not start if no slot is assigned to the request', function (): void {
