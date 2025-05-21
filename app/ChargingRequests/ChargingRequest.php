@@ -43,7 +43,9 @@ final class ChargingRequest extends Model
     }
 
     /**
+     * @throws CannotStartChargingRequest
      * @throws CannotAssignRequestWithoutSlot
+     * @throws ChargingRequestAlreadyFinished
      */
     public function assignTo(ChargingSlot $slot): void
     {
