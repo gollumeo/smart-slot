@@ -9,6 +9,7 @@ use App\ChargingRequests\Write\AssignSlotToRequest;
 use App\ChargingRequests\Write\CancelChargingRequest;
 use App\ChargingRequests\Write\SelectNextRequestToAssign;
 use App\Contracts\ChargingRequestRepository;
+use App\Exceptions\ChargingRequestAlreadyFinished;
 use Illuminate\Support\Collection;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -81,6 +82,38 @@ describe('Unit: Cancel Charging Request', function (): void {
     });
 
     it('cannot cancel a terminal request', function (): void {
-        // TODO
+        /** @var TestCase $this */
+        $user = $this->createStaticTestUser();
+        $chargingRequest = ChargingRequest::fromDomain(
+            userId: $user->id,
+            batteryPercentage: new BatteryPercentage(50),
+            chargingWindow: $this->createWindow('21-05-2025 09:00', '21-05-2025 12:00'),
+            status: ChargingRequestStatus::DONE
+        );
+
+        $anotherRequest = ChargingRequest::fromDomain(
+            userId: $user->id,
+            batteryPercentage: new BatteryPercentage(50),
+            chargingWindow: $this->createWindow('21-05-2025 09:00', '21-05-2025 12:00'),
+            status: ChargingRequestStatus::CANCELLED
+        );
+
+        /** @var MockInterface&ChargingRequestRepository $repository */
+        $repository = $this->makeMock(ChargingRequestRepository::class);
+        $repository->shouldNotReceive('save');
+        $repository->shouldNotReceive('getPendingRequests');
+
+        /** @var MockInterface&AssignSlotToRequest $assignSlot */
+        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
+        $assignSlot->shouldNotReceive('__invoke');
+
+        /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
+        $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
+        $selectNextRequest->shouldNotReceive('__invoke');
+
+        $useCase = new CancelChargingRequest($repository, $assignSlot, $selectNextRequest);
+
+        expect(fn () => $useCase->execute($chargingRequest))->toThrow(ChargingRequestAlreadyFinished::class)
+            ->and(fn () => $useCase->execute($anotherRequest))->toThrow(ChargingRequestAlreadyFinished::class);
     });
 });
