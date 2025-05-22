@@ -30,6 +30,10 @@ final class ChargingRequest extends Model
     /** @use HasFactory<ChargingRequestFactory> */
     use HasFactory;
 
+    protected $casts = [
+        'status' => ChargingRequestStatus::class,
+    ];
+
     public static function fromDomain(int $userId, BatteryPercentage $batteryPercentage, ChargingWindow $chargingWindow, ChargingRequestStatus $status = ChargingRequestStatus::QUEUED): self
     {
         $instance = new self();
