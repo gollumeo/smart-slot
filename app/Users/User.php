@@ -44,6 +44,11 @@ final class User extends Authenticatable
         return $instance;
     }
 
+    protected static function newFactory(): UserFactory
+    {
+        return new UserFactory();
+    }
+
     /**
      * Get the attributes that should be cast.
      *

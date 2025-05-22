@@ -12,6 +12,8 @@ use App\Exceptions\CannotAssignRequestWithoutSlot;
 use App\Exceptions\CannotStartChargingRequest;
 use App\Exceptions\ChargingRequestAlreadyFinished;
 use Carbon\CarbonImmutable;
+use Database\Factories\ChargingRequestFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,6 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class ChargingRequest extends Model
 {
+    /** @use HasFactory<ChargingRequestFactory> */
+    use HasFactory;
+
     public static function fromDomain(int $userId, BatteryPercentage $batteryPercentage, ChargingWindow $chargingWindow, ChargingRequestStatus $status = ChargingRequestStatus::QUEUED): self
     {
         $instance = new self();
@@ -78,5 +83,10 @@ final class ChargingRequest extends Model
     public function conflictsWith(ChargingWindow $window): bool
     {
         return $this->starts_at < $window->end() && $this->ends_at > $window->start();
+    }
+
+    protected static function newFactory(): ChargingRequestFactory
+    {
+        return new ChargingRequestFactory();
     }
 }

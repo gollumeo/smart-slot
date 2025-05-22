@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
             $table->enum('status', array_column(ChargingRequestStatus::cases(), 'value'));
-            $table->foreignIdFor(ChargingSlot::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(ChargingSlot::class, 'slot_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamp('charging_started_at')->nullable();
             $table->timestamps();
         });
