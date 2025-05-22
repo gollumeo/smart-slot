@@ -8,7 +8,9 @@ use App\ChargingRequests\ValueObjects\ChargingRequestStatus;
 use App\ChargingRequests\Write\AssignSlotToRequest;
 use App\ChargingRequests\Write\EndChargingRequest;
 use App\ChargingRequests\Write\SelectNextRequestToAssign;
+use App\ChargingSlots\ChargingSlot;
 use App\Contracts\ChargingRequestRepository;
+use App\Contracts\ChargingSlotRepository;
 use App\Exceptions\ChargingRequestAlreadyFinished;
 use Illuminate\Support\Collection;
 use Mockery\MockInterface;
@@ -39,12 +41,12 @@ describe('Unit: End Charging Request', function (): void {
             ->with(Mockery::type(Collection::class))
             ->andReturn(null);
 
-        /** @var MockInterface&AssignSlotToRequest $assignSlot */
-        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
+        /** @var MockInterface&ChargingSlotRepository $slots */
+        $slots = $this->mock(ChargingSlotRepository::class);
 
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
-            assignSlot: $assignSlot,
+            slots: $slots,
             selectNextRequest: $selectNextRequest,
         );
 
@@ -73,9 +75,12 @@ describe('Unit: End Charging Request', function (): void {
         /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
         $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
 
+        /** @var MockInterface&ChargingSlotRepository $slots */
+        $slots = $this->mock(ChargingSlotRepository::class);
+
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
-            assignSlot: $assignSlot,
+            slots: $slots,
             selectNextRequest: $selectNextRequest,
         );
 
@@ -99,19 +104,19 @@ describe('Unit: End Charging Request', function (): void {
         $highPriorityRequest = new ChargingRequest();
         $highPriorityRequest->starts_at = $this->parseCarbon('19-05-2025 13:00');
         $highPriorityRequest->battery_percentage = 20;
+        $highPriorityRequest->ends_at = $this->parseCarbon('19-05-2025 15:00');
+        $highPriorityRequest->status = ChargingRequestStatus::QUEUED;
 
         $lowPriorityRequest = new ChargingRequest();
         $lowPriorityRequest->starts_at = $this->parseCarbon('19-05-2025 13:00');
+        $lowPriorityRequest->ends_at = $this->parseCarbon('19-05-2025 15:00');
         $lowPriorityRequest->battery_percentage = 80;
+        $lowPriorityRequest->status = ChargingRequestStatus::QUEUED;
 
         /** @var MockInterface&ChargingRequestRepository $chargingRepository */
         $chargingRepository = $this->makeMock(ChargingRequestRepository::class);
         $chargingRepository->shouldReceive('save')->once()->with($finishedRequest);
         $chargingRepository->shouldReceive('getPendingRequests')->once()->andReturn(collect([$highPriorityRequest, $lowPriorityRequest]));
-
-        /** @var MockInterface&AssignSlotToRequest $assignSlot */
-        $assignSlot = $this->makeMock(AssignSlotToRequest::class);
-        $assignSlot->shouldReceive('__invoke')->once()->with($highPriorityRequest);
 
         /** @var MockInterface&SelectNextRequestToAssign $selectNextRequest */
         $selectNextRequest = $this->makeMock(SelectNextRequestToAssign::class);
@@ -119,9 +124,16 @@ describe('Unit: End Charging Request', function (): void {
             ->with(Mockery::on(fn (Collection $collection) => $collection->contains($highPriorityRequest)))
             ->andReturn($highPriorityRequest);
 
+        /** @var MockInterface&ChargingSlotRepository $slots */
+        $slots = $this->mock(ChargingSlotRepository::class);
+
+        $slot = ChargingSlot::factory()->make(['id' => 42]);
+
+        $slots->shouldReceive('list')->once()->andReturn(collect([$slot]));
+
         $useCase = new EndChargingRequest(
             chargingRequests: $chargingRepository,
-            assignSlot: $assignSlot,
+            slots: $slots,
             selectNextRequest: $selectNextRequest
         );
 
@@ -155,12 +167,12 @@ describe('Unit: End Charging Request', function (): void {
             ->with(Mockery::type(Collection::class))
             ->andReturn(null);
 
-        $assignSlot = Mockery::mock(AssignSlotToRequest::class);
-        $assignSlot->shouldNotReceive('__invoke');
+        /** @var MockInterface&ChargingSlotRepository $slots */
+        $slots = $this->mock(ChargingSlotRepository::class);
 
         $useCase = new EndChargingRequest(
             chargingRequests: $repository,
-            assignSlot: $assignSlot,
+            slots: $slots,
             selectNextRequest: $selectNextRequest,
         );
 
