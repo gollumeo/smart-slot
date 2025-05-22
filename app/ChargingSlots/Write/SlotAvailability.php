@@ -25,6 +25,7 @@ final readonly class SlotAvailability implements SlotAvailabilityRules
     private function hasConflictWith(ChargingSlot $slot, ChargingWindow $window): bool
     {
         return $this->requestsAssignedTo($slot)
+            ->reject(fn (ChargingRequest $r) => $r->status->isTerminal())
             ->contains(fn (ChargingRequest $request) => $request->conflictsWith($window));
     }
 
@@ -34,6 +35,9 @@ final readonly class SlotAvailability implements SlotAvailabilityRules
     private function requestsAssignedTo(ChargingSlot $slot): Collection
     {
         return $this->assignedRequests
-            ->filter(fn (ChargingRequest $request) => $request->slot_id === $slot->id);
+            ->filter(function (ChargingRequest $request) use ($slot): bool {
+                return $request->slot_id === $slot->id
+                    && ! $request->status->isTerminal();
+            });
     }
 }
