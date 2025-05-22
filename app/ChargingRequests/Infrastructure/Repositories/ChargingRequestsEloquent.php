@@ -44,10 +44,12 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
 
     public function getOngoingRequests(): Collection
     {
-        return ChargingRequest::whereIn('status', [
-            ChargingRequestStatus::QUEUED,
-            ChargingRequestStatus::ASSIGNED,
-            ChargingRequestStatus::CHARGING,
-        ])->get();
+        return ChargingRequest::query()
+            ->select('*')
+            ->whereIn('status', [
+                ChargingRequestStatus::ASSIGNED,
+                ChargingRequestStatus::CHARGING,
+            ])
+            ->get();
     }
 }
