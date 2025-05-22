@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
+use App\Exceptions\UserAlreadyHasActiveChargingRequest;
 use App\Http\Middleware\ForceJson;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,5 +22,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(ForceJson::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->renderable(function (
+            UserAlreadyHasActiveChargingRequest|
+            ChargingRequestAlreadyFinished|
+            CannotAssignRequestWithoutSlot|
+            CannotStartChargingRequest $e
+        ) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'exception' => class_basename($e),
+            ], 422, [], JSON_PRETTY_PRINT);
+        });
     })->create();
