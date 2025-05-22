@@ -28,6 +28,7 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
             ->whereIn('status', [
                 ChargingRequestStatus::QUEUED,
                 ChargingRequestStatus::ASSIGNED,
+                ChargingRequestStatus::CHARGING,
             ])
             ->orderByDesc('created_at')
             ->first();
