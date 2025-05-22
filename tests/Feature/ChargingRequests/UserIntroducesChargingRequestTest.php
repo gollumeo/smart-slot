@@ -59,7 +59,7 @@ describe('Feature: User introduces a charging request', function (): void {
         $data = $response->json('data');
 
         expect($data['slot_id'])->toBeNull()
-            ->and($data['status'])->toBe(ChargingRequestStatus::QUEUED->value);
+            ->and($data['status'])->toBe(ChargingRequestStatus::QUEUED);
     });
 
     it('is assigned a slot immediately when one is available', function (): void {
@@ -101,7 +101,7 @@ describe('Feature: User introduces a charging request', function (): void {
         $data = $response->json('data');
 
         expect($data['slot_id'])->toBe($slotB->id)
-            ->and($data['status'])->toBe(ChargingRequestStatus::ASSIGNED->value);
+            ->and($data['status'])->toBe(ChargingRequestStatus::ASSIGNED);
     });
 
     it('is rejected if the user already has an ongoing charging session', function (): void {
