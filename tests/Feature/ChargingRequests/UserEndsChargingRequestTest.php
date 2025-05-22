@@ -33,7 +33,6 @@ describe('Feature: User ends a charging request', function (): void {
         $response = $this->actingAs($user)
             ->postJson("api/charging-requests/{$request->id}/end");
 
-        dump($response->json());
         expect($response->status())->toBe(Response::HTTP_OK);
         $request->refresh();
         expect($request->status)->toBe(ChargingRequestStatus::DONE);
