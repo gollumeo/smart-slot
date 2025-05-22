@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\ChargingRequests\Http\Controllers\IntroduceChargingRequestController;
 use App\Users\Http\Controllers\AuthController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
 Route::post('/auth/token', AuthController::class);
+
+Route::middleware(['auth:sanctum'])->group(function (): void {
+    Route::prefix('/charging-requests')->name('charging-requests.')->group(function (): void {
+        Route::post('', [IntroduceChargingRequestController::class])->name('introduce');
+    });
+});
