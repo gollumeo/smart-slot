@@ -14,7 +14,15 @@ interface ChargingRequestRepository
 
     public function hasActiveRequestFor(User $user): bool;
 
+    /**
+     * @return Collection<int, ChargingRequest>
+     */
     public function getPendingRequests(): Collection;
 
     public function getActiveRequestFor(User $user): ?ChargingRequest;
+
+    /**
+     * @return Collection<int, ChargingRequest>
+     */
+    public function getOngoingRequests(): Collection;
 }

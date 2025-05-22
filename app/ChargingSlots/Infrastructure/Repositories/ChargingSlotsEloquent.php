@@ -6,6 +6,7 @@ namespace App\ChargingSlots\Infrastructure\Repositories;
 
 use App\ChargingSlots\ChargingSlot;
 use App\Contracts\ChargingSlotRepository;
+use Illuminate\Support\Collection;
 
 final class ChargingSlotsEloquent implements ChargingSlotRepository
 {
@@ -19,5 +20,10 @@ final class ChargingSlotsEloquent implements ChargingSlotRepository
     public function save(ChargingSlot $slot): void
     {
         // TODO: Implement save() method.
+    }
+
+    public function list(): Collection
+    {
+        return ChargingSlot::all();
     }
 }

@@ -20,16 +20,14 @@ final class ChargingRequestFactory extends Factory
 {
     protected $model = ChargingRequest::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    private ?ChargingWindow $customWindow = null;
+
+    public function withWindow(ChargingWindow $window): self
     {
-        return [
-            //
-        ];
+        $clone = clone $this;
+        $clone->customWindow = $window;
+
+        return $clone;
     }
 
     /**
@@ -41,30 +39,38 @@ final class ChargingRequestFactory extends Factory
     {
         /** @var int $userId */
         $userId = $attributes['user_id'] ?? User::factory()->create()->id;
+
         /** @var float $battery */
-        $battery = $attributes['battery_percentage'] ?? random_int(10, 80);
+        $battery = ($attributes['battery_percentage'] ?? random_int(10, 80));
 
-        $start = now()->addMinutes(random_int(5, 30))->toImmutable();
-        $end = $start->addHour();
-
-        $window = new ChargingWindow($start, $end);
+        $window = $this->customWindow ?? new ChargingWindow(
+            now()->addMinutes(random_int(5, 30))->toImmutable(),
+            now()->addMinutes(random_int(65, 90))->toImmutable()
+        );
 
         /** @var ChargingRequestStatus $status */
         $status = $attributes['status'] ?? ChargingRequestStatus::QUEUED;
 
-        $model = ChargingRequest::fromDomain(
+        $chargingRequest = ChargingRequest::fromDomain(
             $userId,
             new BatteryPercentage($battery),
             $window,
             $status
         );
 
-        if (isset($attributes['slot_id'])) {
-            $model->slot_id = $attributes['slot_id'];
+        if (array_key_exists('slot_id', $attributes)) {
+            /** @var int|null $slotId */
+            $slotId = $attributes['slot_id'];
+            $chargingRequest->slot_id = $slotId;
         }
 
-        $model->save();
+        $chargingRequest->save();
 
-        return $model;
+        return $chargingRequest;
+    }
+
+    public function definition()
+    {
+        //
     }
 }

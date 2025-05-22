@@ -19,16 +19,7 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
 
     public function hasActiveRequestFor(User $user): bool
     {
-        // TODO: Implement hasActiveRequestFor() method.
-        return true;
-    }
-
-    public function getPendingRequests(): Collection
-    {
-        return ChargingRequest::where('status', ChargingRequestStatus::QUEUED)
-            ->orderBy('starts_at')
-            ->orderBy('battery_percentage')
-            ->get();
+        return $this->getActiveRequestFor($user) !== null;
     }
 
     public function getActiveRequestFor(User $user): ?ChargingRequest
@@ -40,5 +31,22 @@ final class ChargingRequestsEloquent implements ChargingRequestRepository
             ])
             ->orderByDesc('created_at')
             ->first();
+    }
+
+    public function getPendingRequests(): Collection
+    {
+        return ChargingRequest::where('status', ChargingRequestStatus::QUEUED)
+            ->orderBy('starts_at')
+            ->orderBy('battery_percentage')
+            ->get();
+    }
+
+    public function getOngoingRequests(): Collection
+    {
+        return ChargingRequest::whereIn('status', [
+            ChargingRequestStatus::QUEUED,
+            ChargingRequestStatus::ASSIGNED,
+            ChargingRequestStatus::CHARGING,
+        ])->get();
     }
 }
