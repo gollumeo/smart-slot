@@ -143,14 +143,54 @@ describe('Feature: User introduces a charging request', function (): void {
     });
 
     it('receives a clear confirmation containing the request status and ID', function (): void {
-        // TODO
+        /** @var TestCase $this */
+        $user = User::factory()->create();
+
+        $payload = [
+            'battery_percentage' => 42,
+            'charging_window' => [
+                'start_time' => now()->addHour()->format('d-m-Y H:i'),
+                'end_time' => now()->addHours(2)->format('d-m-Y H:i'),
+            ],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/charging-requests', $payload);
+
+        expect($response->status())->toBe(Response::HTTP_CREATED, $response->content());
+
+        /** @var array{id: int|null, slot_id: int|null, status: string} $data */
+        $data = $response->json('data');
+
+        dump($data);
+
+        expect($data)->toHaveKeys(['id', 'slot_id', 'status'])
+            ->and($data['id'])->not()->toBeNull()
+            ->and(in_array($data['status'], [
+                ChargingRequestStatus::QUEUED->value,
+                ChargingRequestStatus::ASSIGNED->value,
+            ]))->toBeTrue();
     });
 
     it('cannot inject invalid battery percentages or malformed charging windows', function (): void {
-        // TODO
-    });
+        /** @var TestCase $this */
+        $user = User::factory()->create();
 
-    it('cannot start a request in the past', function (): void {
-        // TODO
+        $payload = [
+            'battery_percentage' => 150,
+            'charging_window' => [
+                'start_time' => 'pas-une-date',
+                'end_time' => now()->subHour()->toIso8601String(),
+            ],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/charging-requests', $payload);
+
+        expect($response->status())->toBe(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        $data = $response->json();
+
+        expect($data['errors'])->toHaveKey('battery_percentage')
+            ->and($data['errors'])->toHaveKey('charging_window.start_time')
+            ->and($data['errors'])->toHaveKey('charging_window.end_time');
     });
 });
