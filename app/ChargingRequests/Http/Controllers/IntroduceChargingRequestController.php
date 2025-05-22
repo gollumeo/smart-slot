@@ -4,20 +4,35 @@ declare(strict_types=1);
 
 namespace App\ChargingRequests\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\ChargingRequests\Http\Requests\IntroduceChargingRequest;
+use App\ChargingRequests\Http\Resources\ChargingRequestResource;
+use App\ChargingRequests\Write\StartChargingRequest;
+use App\Exceptions\CannotAssignRequestWithoutSlot;
+use App\Exceptions\CannotStartChargingRequest;
+use App\Exceptions\ChargingRequestAlreadyFinished;
+use App\Exceptions\UserAlreadyHasActiveChargingRequest;
+use Illuminate\Http\JsonResponse;
 
-final class IntroduceChargingRequestController
+final readonly class IntroduceChargingRequestController
 {
-    public function __construct(private IntroduceChargingRequest $introduce) {}
+    public function __construct(private StartChargingRequest $startChargingRequest) {}
 
-    public function __invoke(Request $request)
+    /**
+     * @throws CannotAssignRequestWithoutSlot
+     * @throws ChargingRequestAlreadyFinished
+     * @throws CannotStartChargingRequest
+     * @throws UserAlreadyHasActiveChargingRequest
+     */
+    public function __invoke(IntroduceChargingRequest $request): JsonResponse
     {
-
-        $chargingRequest = ($this->introduce)(
-            $request->user(),
-            ChargingRequestPayload::from($request)
+        $chargingRequest = $this->startChargingRequest->execute(
+            user: $request->chargingRequestUser(),
+            chargingWindow: $request->chargingWindow(),
+            batteryPercentage: $request->batteryPercentage(),
         );
 
-        return NarrateChargingRequestIntroduction::from($chargingRequest);
+        return new ChargingRequestResource($chargingRequest)
+            ->response()
+            ->setStatusCode(201);
     }
 }

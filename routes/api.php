@@ -10,6 +10,6 @@ Route::post('/auth/token', AuthController::class);
 
 Route::middleware(['auth:sanctum'])->group(function (): void {
     Route::prefix('/charging-requests')->name('charging-requests.')->group(function (): void {
-        Route::post('', [IntroduceChargingRequestController::class])->name('introduce');
+        Route::post('', IntroduceChargingRequestController::class)->name('introduce');
     });
 });
