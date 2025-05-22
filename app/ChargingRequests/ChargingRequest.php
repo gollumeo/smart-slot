@@ -32,7 +32,11 @@ final class ChargingRequest extends Model
 
     protected $casts = [
         'status' => ChargingRequestStatus::class,
+        'starts_at' => 'immutable_datetime',
+        'ends_at' => 'immutable_datetime',
     ];
+
+    protected $guarded = [];
 
     public static function fromDomain(int $userId, BatteryPercentage $batteryPercentage, ChargingWindow $chargingWindow, ChargingRequestStatus $status = ChargingRequestStatus::QUEUED): self
     {
@@ -58,7 +62,14 @@ final class ChargingRequest extends Model
      */
     public function assignTo(ChargingSlot $slot): void
     {
-        $this->slot_id = $slot->id;
+        $this->setAttribute('slot_id', $slot->id);
+        $this->setAttribute('status', ChargingRequestStatus::ASSIGNED->value);
+
+        // Force Laravel à voir les attributs comme modifiés
+        $this->syncOriginalAttribute('slot_id');
+        $this->syncOriginalAttribute('status');
+
+        // Conserve les règles métier en appelant markAs (sans modifier les attributs dans markAs)
         $this->markAs(ChargingRequestStatus::ASSIGNED);
     }
 
