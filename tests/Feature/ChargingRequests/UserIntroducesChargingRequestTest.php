@@ -137,8 +137,6 @@ describe('Feature: User introduces a charging request', function (): void {
         /** @var array{message: string} $data */
         $data = $response->json();
 
-        dump($data);
-
         expect($data['message'])->toContain('active charging request');
     });
 
@@ -160,8 +158,6 @@ describe('Feature: User introduces a charging request', function (): void {
 
         /** @var array{id: int|null, slot_id: int|null, status: string} $data */
         $data = $response->json('data');
-
-        dump($data);
 
         expect($data)->toHaveKeys(['id', 'slot_id', 'status'])
             ->and($data['id'])->not()->toBeNull()
