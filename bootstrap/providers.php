@@ -6,4 +6,5 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Providers\ChargingRequestServiceProvider::class,
     App\Providers\ChargingSlotServiceProvider::class,
+    App\Providers\RouteServiceProvider::class,
 ];
