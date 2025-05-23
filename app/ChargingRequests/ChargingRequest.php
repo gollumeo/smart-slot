@@ -65,11 +65,9 @@ final class ChargingRequest extends Model
         $this->setAttribute('slot_id', $slot->id);
         $this->setAttribute('status', ChargingRequestStatus::ASSIGNED->value);
 
-        // Force Laravel à voir les attributs comme modifiés
         $this->syncOriginalAttribute('slot_id');
         $this->syncOriginalAttribute('status');
 
-        // Conserve les règles métier en appelant markAs (sans modifier les attributs dans markAs)
         $this->markAs(ChargingRequestStatus::ASSIGNED);
     }
 
