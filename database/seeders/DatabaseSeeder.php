@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\ChargingSlots\ChargingSlot;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Users\User;
 use Illuminate\Database\Seeder;
 
 final class DatabaseSeeder extends Seeder
@@ -16,5 +16,15 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         ChargingSlot::factory(5)->create();
+
+        User::factory()->create([
+            'name' => 'Alice',
+            'email' => 'alice@test.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Bob',
+            'email' => 'bob@test.com',
+        ]);
     }
 }
